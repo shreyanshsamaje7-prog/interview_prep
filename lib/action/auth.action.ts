@@ -1,104 +1,99 @@
-'use server'
-import {db} from '@/firebase/admin'
-import { cookies } from 'next/headers'
-import {auth} from 'firebase-admin/auth'
-import { id } from 'zod/v4/locales'
-const ONE_WEEK = 60*60*24*7
+"use server"
+import {db,auth} from "@/firebase/admin"
+import {cookies} from "next/headers"
+const ONE_WEEK=60*60*24*7;
 
-export async function singUp(params:SignUpParams){
-    const {uid,name,email,password}=params
+export async function signUp(params:SignUpParams){
+    const {uid,name,email}=params;
     try{
-        const userRecord = await db.collection('users').doc(uid).get()
-        if(userRecord.exists){
-            return{
-                success:false,
-                message:'user already exist'
-            }
+
+        const user=await db.collection("users").doc(uid).get();
+        if(user.exists){
+            return {success:false,message:"User already exists:"}
         }
         await db.collection('users').doc(uid).set({
-            email,
-            name
+            name,email
         })
         return {
             success:true,
-            message:"Account Created Successfully,Please Sign-In"
+            message:"User created successfully"
         }
-
-    }catch(e){
-        console.error("Error by user", e)
-
-        if(e==='auth/email-already-exists'){
-            return {error:'User with this email already exists'
-            }
+    }catch(e: any){
+        console.error("Error signing up:",e);
+        if(e.code==="auth/email-already-exists"){
+            return { success: false, message: "Email already exists" };
         }
-        return {error:'Something went wrong while creating user'}
+        return { success: false, message: "An error occurred during sign up" };
     }
+    
 }
 
 export async function signIn(params:SignInParams){
-
-    const {email,idToken} = params
+    const {email,idToken}=params;
     try{
-            const user = await auth.getUserByEmail(email)
-            if(!user){
-                return {
-                    success:false,
-                    message:"Not have an Account ,Create an account"
-                }
-            }
-            await setSessionCookie(idToken)
-    }catch(e){
-        console.error("error :",e)
-        return {
-            success:false,
-            message:"error while signing in"
+        const userRecord=await auth.getUserByEmail(email);
+        if(!userRecord){
+            return{success:false,message:"User not found"}
         }
-    }
-}
-
-export async function setSessionCookie(idToken:string){
-    const cookieStore = await cookies()
-
-    const sessionCookie = await auth.createSessionCookie(idToken,{
-        expiresIn: ONE_WEEK*1000
-    })
-    cookieStore.set('session',sessionCookie,{
-        maxAge:ONE_WEEK,
-        httpOnly:true,
-        secure:process.env.NODE_ENV ==='production',
-        path:'/',
-        sameSite:'lax'
-    })
-}
-
-export async function getCurrentUser():Promise<User | null>{
-    const cookieStore = await cookies()
-
-    const sessionCookie=cookieStore.get('session')?.value
-
-    if(!sessionCookie) return null
-
-    try{
-        const decodedClaims= await auth.verifySessionCookie(sessionCookie,true)
-        
-        const userRecord= await db
-        .collection('users')
-        .doc(decodedClaims.uid)
-        .get()
-        
-        if(!userRecord.exists) return null
-        
+        await setSessionCookie(idToken);
         return {
+            success: true,
+            message: "Signed in successfully",
+        };
+
+    }catch(e: any){
+        console.error("Error signing in:",e);
+        return { success: false, message: "An error occurred during sign in" };
+    }
+    
+}
+
+export async function setSessionCookie(idToken: string) {
+  const cookieStore = await cookies();
+
+  const sessionCookie = await auth.createSessionCookie(idToken, {
+    expiresIn: ONE_WEEK * 1000, // milliseconds
+  });
+   
+
+  cookieStore.set("session", sessionCookie, {
+    maxAge: ONE_WEEK,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+  });
+
+  return true;
+}
+
+export async function getCurrentUser():Promise<User | null>{ 
+    const cookiStore = await cookies();
+    const sessionCookie=cookiStore.get("session")?.value;
+    
+    if(!sessionCookie){
+        return null;
+    }
+    try{
+        const decodedClaims= await auth.verifySessionCookie(sessionCookie,true);
+        const userRecord= await db.collection("users").doc(decodedClaims.uid).get();
+        if(!userRecord.exists){
+            return null;
+        }
+        return{
             ...userRecord.data(),
-            id:userRecord.id,
-        } as User
+            id:userRecord.id
+        } as User;
 
     }catch(e){
-        console.log(e)
-        return null
+        console.error("Error getting current user:",e);
+        return null;
     }
 }
-export async function isAuthenticated (){
-    const user = await getCurrentUser()
+
+export async function isAuthenticated(){
+    const user=await getCurrentUser();
     return !!user;
 }
+
+

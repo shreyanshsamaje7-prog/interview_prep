@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 
 const Authlayout = ({children}:{children:ReactNode}) => {
   const userAuthenticated = isAuthenticated();
-  if (userAuthenticated) redirect('/') ;
+  
   return (
     <div>
       

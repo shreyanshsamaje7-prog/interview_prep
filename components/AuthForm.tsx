@@ -12,7 +12,7 @@ import FormField from "@/components/FormField";
 import { useRouter } from "next/navigation";
 import { auth } from "@/firebase/client";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { singUp,signIn } from "@/lib/action/auth.action"
+import { signUp,signIn } from "@/lib/action/auth.action"
 
 
 type FormType = "sign-up" | "sign-in";
@@ -43,7 +43,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
           const{email,name,password}=data
           const userCredential = await createUserWithEmailAndPassword(auth,data.email,data.password)
 
-          const result = await singUp({
+          const result = await signUp({
             uid:userCredential.user.uid,
             email,
             name:name!,

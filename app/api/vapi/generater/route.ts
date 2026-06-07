@@ -8,11 +8,16 @@ export async function GET(){
 }
 
 export async function POST(request:Request){
-    const {type,role,level,techstack,amount,userid}= await request.json()
+
+    const body = await request.json();
+
+    console.log("VAPI BODY:", JSON.stringify(body, null, 2));
+
+    const { type, role, level, techstack, amount, userid } = body;
 
     try{
         const {text} = await generateText({
-            model:google('gemini-3.5-flash'),
+            model:google('gemini-2.5-flash'),
             prompt:`
             Prepare questions for a job interview.
         The job role is ${role}.
