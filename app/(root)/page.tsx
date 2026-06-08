@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button'
 import React from 'react'
 import Image from 'next/image'
@@ -7,7 +8,10 @@ import { getCurrentUser } from '@/lib/action/auth.action'
 import { getInterviewsByUserId, getLatestInterviews } from '@/lib/action/general.action'
 
 
+
 const page = async () => {
+
+  
  const user = await getCurrentUser();
  const[interviews,latestInterviews]=await Promise.all([getInterviewsByUserId(user?.id!),getLatestInterviews({userId:user?.id!})])
  
@@ -16,13 +20,14 @@ const page = async () => {
  const hasInterviews = interviews?.length! > 0;
 
 
+
   return (
     <>
       <section className='flex flex-row items-center min-w-lg card-cta'>
         <div className='flex flex-col gap-6 text-white'>
           <h2>Get Interview Ready with AI Powered Practice & Learning</h2>
           <p>practice on real interview questions & get feedback</p>
-          <Button className='btn-primary w-2/3'>Start an Interview</Button>
+         <a href='/interview'><Button className='btn-primary w-2/3'>Start an Interview</Button></a> 
         </div>
         <Image src='/robot.png' alt='robot' width={400} height={400} />
       </section>
