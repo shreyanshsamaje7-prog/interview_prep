@@ -42,16 +42,13 @@ export async function getLatestInterviews(params: GetLatestInterviewsParams):Pro
     })) as Interview[];
 } 
 
-export async function getInterviewById(params:RouteParams):Promise<Interview|null>{
-    const id = await params?.id
+export async function getInterviewById(id:string):Promise<Interview|null>{
+    
     const interview= await db.
     collection("interviews")
     .doc(id)
     .get();
 
 
-    return interview.exists ? {
-        id: interview.id,
-        ...interview.data()
-    } as Interview : null;
+    return interview.data() as Interview | null
 } 
