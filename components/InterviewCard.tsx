@@ -7,7 +7,7 @@ import { Button } from './ui/button'
 import Link from 'next/link'
 import DisplayTechIcons from './DisplayTechIcons'
 
-const InterviewCard = ({ id, userId, createdAt, techstack, type, level, role }: InterviewCardProps) => {
+const InterviewCard = ({ id, userId, role,type,techstack,createdAt }: InterviewCardProps) => {
 
     const feedback = null as Feedback | null
     const normalizedType = /mix/gi.test(type) ? "Mixed" : type

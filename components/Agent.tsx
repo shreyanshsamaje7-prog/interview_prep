@@ -7,6 +7,8 @@ import {vapi} from "@/lib/vapi.sdk"
 import { error } from 'console';
 import { useRouter } from 'next/navigation';
 import { interviewer } from '@/constants';
+import { createFeedback } from '@/lib/action/general.action';
+import { string } from 'zod';
 
 enum Status {
     ACTIVE = 'ACTIVE',
@@ -20,7 +22,7 @@ interface SavedMessage {
     content: string
 }
 
-const Agent = ({ userName ,userId,type,interviewId,questions}: AgentProps) => {
+const Agent = ({ userName ,userId,type,interviewId,questions, feedbackId}: AgentProps) => {
     const router = useRouter()
     const [callStatus, setcallStatus] = useState(Status.INACTIVE)
     const [message, setMessage] = useState<SavedMessage[]>([])
@@ -31,12 +33,16 @@ const Agent = ({ userName ,userId,type,interviewId,questions}: AgentProps) => {
     const handleGenerateFeedback= async(message:SavedMessage[])=>{
         console.log("Generate Feedback here")
 
-        const {sucess,id}={
-            sucess:true,
-            id:'feedback-id'
-        }
+        const {success,id} = await createFeedback({
+            interviewId:interviewId!,
+            userId:userId!,
+            transcript:message,
+            feedbackId:feedbackId!,
+        })
 
-        if(sucess && id){
+        
+
+        if(success && id){
             router.push(`/interview/${interviewId}/feedback`)
         }
         else{
@@ -94,7 +100,7 @@ const Agent = ({ userName ,userId,type,interviewId,questions}: AgentProps) => {
         if(type === 'generate'){
 
             setcallStatus(Status.CONNECTING)
-            console.log(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID)
+            
              vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID, {
                  variableValues:{
                      userid : userId,
